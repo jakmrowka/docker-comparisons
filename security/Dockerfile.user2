@@ -1,0 +1,5 @@
+FROM alpine
+RUN adduser -D -u 1002 user2
+USER user2
+WORKDIR /shared
+CMD ["sleep", "3600"]

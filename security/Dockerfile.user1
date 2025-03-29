@@ -1,0 +1,9 @@
+FROM alpine
+RUN adduser -D -u 1001 user1
+USER user1
+WORKDIR /shared
+CMD ["sh", "-c", "\
+  echo 'Plik stworzony przez user1' > plik_user1.txt && \
+  chmod 644 plik_user1.txt && \
+  sleep 3600 \
+"]

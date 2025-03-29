@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  api:
+    build: ./api
+    container_name: fruit-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - fruit-data:/data
+    environment:
+      DB_PATH: /data/fruits.db
+
+  db:
+    build: ./db
+    container_name: fruit-db
+    volumes:
+      - fruit-data:/data
+
+volumes:
+  fruit-data:

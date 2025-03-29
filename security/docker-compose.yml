@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  user1:
+    build:
+      context: .
+      dockerfile: Dockerfile.user1
+    container_name: user1-container
+    volumes:
+      - shared-data:/shared
+
+  user2:
+    build:
+      context: .
+      dockerfile: Dockerfile.user2
+    container_name: user2-container
+    volumes:
+      - shared-data:/shared
+
+  root:
+    build:
+      context: .
+      dockerfile: Dockerfile.root
+    container_name: root-container
+    volumes:
+      - shared-data:/shared
+
+volumes:
+  shared-data:

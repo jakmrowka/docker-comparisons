@@ -1,0 +1,14 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# najpierw tylko requirements - lepsze cache'owanie warstw
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# dopiero potem kopiowanie kodu aplikacji
+COPY . .
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]

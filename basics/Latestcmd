@@ -1,0 +1,7 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+CMD ["echo", "pierwsze CMD"]   # <-- to zostanie ZIGNOROWANE
+CMD ["echo", "drugie CMD"]     # <-- to zostanie ZIGNOROWANE
+CMD ["echo", "OSTATNIE CMD"]   # ✅ TYLKO TO SIĘ WYKONA

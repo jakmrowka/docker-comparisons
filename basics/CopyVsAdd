@@ -1,0 +1,11 @@
+FROM python:3.12-slim
+
+# ADD rozpakuje archiwum lub kopiuje
+ADD sample.tar.gz /app/add-sample/
+ADD sampletext.txt /app/add-sample/
+
+# COPY kopiuje plik bez rozpakowania
+COPY sample.tar.gz /app/copy-sample/
+COPY sampletext.txt /app/copy-sample/
+
+CMD ["ls", "-R", "/app"]

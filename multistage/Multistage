@@ -1,0 +1,17 @@
+# etap budowania (pełny obraz)
+FROM python:3.12 AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+# etap runtime (minimalny obraz)
+FROM python:3.12-slim
+WORKDIR /app
+
+# kopiujemy tylko niezbędne biblioteki z buildera
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+
+COPY main.py .
+
+CMD ["python", "main.py"]
