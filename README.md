@@ -4,7 +4,7 @@ W tym repo omawiamy różne przypadki i będziemy po kolei je omawiać
 ### COPY vs ADD
 Obie komendy służą do transportu plików do obrazu
 COPY to zwykłe kopiuj, ADD natomiast może skopiować plik z internetu lub rozpakować archiwum, czy pyta o zgodę? Nie, po prostu to robi
-```
+```dockerfile
 FROM python:3.12-slim
 
 # ADD rozpakuje archiwum lub kopiuje
@@ -58,7 +58,7 @@ ENTRYPOINT jest tylko jedno i jest wykorzystywane przy uruchomieniu dockera jako
 ![image info](images/entryvscmd.png)
 
 My się skupimy na prostym przykładzie:
-```
+```dockerfile
 FROM python:3.12-slim
 
 ENTRYPOINT ["echo"]
@@ -76,9 +76,9 @@ docker run entry
 lub:
 
 ```bash
-docker run entry entry
+docker run entry ARGMUNENT
 ```
-Zmieni wynik W ten sposób, jeżeli macie kontener, który wykonuje jakąś pracę np przetwarza dane to wystarczy mu podać ścieżkę do źródła, a on przetworzy te dane.
+Zmieni wynik w ten sposób, jeżeli macie kontener, który wykonuje jakąś pracę np przetwarza dane to wystarczy mu podać ścieżkę do źródła, a on przetworzy te dane.
 
 ### Warstwy
 Docker składa się z warstw, za prawie każdym razem gdy w dodajecie komendę w Dockerfile tworzy to nową warstwę. Warstwa to niejako zmiany naniesione na pewien określony stan(hash). Następnie nowa warstwa ustala nowy hash na podstawie poprzedniego i zmian wprowadzonych.
@@ -111,7 +111,7 @@ Abstrahując od aspektów przejrzystości jest inny ważniejszy aspekt, który z
 Docker tworzy obraz na bazowym użytkowniku, domyślnie jak w większości systemów pierwszym użytkownikiem jest administrator(root) tak jest i też tutaj.
 Poprzez użycie polecenia USER możemy zmieniać użytkowników tak samo jak polecenie `su`, tylko że nie musimy podawać haseł, bo Docker w momencie kreacji ma pełne uprawnienia.
 
-```
+```dockerfile
 FROM python:3.12-slim
 RUN useradd -m jakub
 USER jakub
@@ -130,7 +130,7 @@ To są kwestie bezpieczeństwa, które zostaną szerzej omówione w folderze com
 ### ENV
 Zmienne środowiskowe. Chcąc przekazać np. ścieżkę do baz danych warto rozważyć przekazanie jej jako zmienną systemową. Zacznijmy od prostego przykładu:
 
-```
+```dockerfile
 FROM python:3.12-slim
 ENV MY_VAR=HelloFromDockerfile
 CMD ["python", "-c", "import os; print(os.getenv('MY_VAR'))"]
@@ -143,7 +143,7 @@ docker build -f basics/Zmienne -t zmienne basics
 Uruchamiajac goły kontyner mamy HelloFromDockerfile:
 
 ```bash
-docker run entry zmienne
+docker run zmienne
 ```
 
 To jest hardcodowanie i nie jest to polecane do danych wrażliwych
@@ -157,7 +157,7 @@ Jednakże to sprawia, że każdy kto widzi historię komend ma wiedzę jakie jes
 W przypadku Dockera możemy użyć pliku i jest to najbezpeiczniejsze (ale nie najbezpieczniejsze w przypadku kubernetesa)
 
 ```bash
-docker run --env-file basics/credentials.env zmienna
+docker run --env-file basics/credentials.env zmienne
 ```
 
 ## Docker ignore
@@ -181,7 +181,7 @@ sample.txt
 A `Dockefile` tak:
 
 ```dockerfile
-FROM python
+FROM python:3.12-slim
 LABEL authors="gad"
 
 WORKDIR /app
@@ -215,25 +215,45 @@ docker builder prune -af
 
 Pokazanie wszystkich kontenerów
 ```bash
-Docker ps
+docker ps
 ```
 
 Pamaret `-a` pozowli pokazać też te zastopowane
 
 Usuwanie pojedynczego kontenera
 ```bash
-Docker rm NAZWA_KONTERA
+docker rm NAZWA_KONTERA
 ```
 
 Pokazanie dostepnych obrazów:
 ```bash
-Docker iamges
+docker images
 ```
 
 Usuwanie pojedynczego obrazu(wystąpi błąd jeżeli chcesz usunąć obraz na którym stoi kontener)
 ```bash
-Docker rmi NAZWA_OBRAZU
+docker rmi NAZWA_OBRAZU
 ```
+
+Pobieranie obrazu:
+```bash
+docker pull obraz
+```
+
+wysłanie obrazu:
+```bash
+docker push obraz
+```
+
+zalogowanie sie do dockerhub
+```bash
+docker login
+```
+
+```bash
+docker login -U username -p haslo
+```
+
 
 ## Przykład aplikacji pythonowej wersja minimalistyczna
 Chcąc napisać prostego dockera dla pythonowego api:
@@ -252,7 +272,7 @@ if __name__ == "__main__":
 ```
 
 Chcąc to wpakować w Dockera najprostsza wersja to:
-```
+```dockerfile
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -282,7 +302,7 @@ Czy można zrobić to lepiej? To zależy. Z punktu widzenia ilości warstw nie z
 
 Przejrzyjmy sie temu Dockerfile:
 
-```python
+```dockerfile
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -322,7 +342,7 @@ COPY --from=nginx:latest /etc/nginx/nginx.conf /nginx.conf
 ```
 gdzie wprost definiujemy, z jakiego obrazu co bierzemy
 Może też być, że najpierw bierzmy obraz "standardowy" gdzie instalujemy potrzebne rzeczy, a potem przerzucamy je na wersję lightweight, żeby odchudzić obraz.
-```python
+```dockerfile
 # etap budowania (pełny obraz)
 FROM python:3.12 AS builder
 WORKDIR /app
@@ -357,12 +377,12 @@ Legenda:
 - `simple-test`(303,83MB) - to `main.py` postawiony na python:3.12-slim
 - `fat-test`(1,19GB) - to `main.py` postawiony na python:3.12
 - `multistage-test`(264,93MB) - to `main.py` postawiony na python:3.12 as builder i uzywajacy python:3.12-slim
-- `simple-test`(264,93MB) - to `main.py` postawiony na python:3.12-slim as builder i uzywajacy python:3.12-slim, gdzie do buildera dodaje zależności które pozwalają zainstalować bilbioteki wymagane
+- `optislim-test`(264,93MB) - to `main.py` postawiony na python:3.12-slim as builder i uzywajacy python:3.12-slim, gdzie do buildera dodaje zależności które pozwalają zainstalować bilbioteki wymagane
 
 ## Docker compose:
 Umiemy już budować i uruchamiać pojedyncze obrazy. A co jeżeli nasze rozwiązanie wymaga aplikacji API i bazy danych.(To można postawić na jednym obrazie, ale nie taki jest cel ćwiczenia)
 Możemy użyć `docker-compose`. Pozwala nam ono na uruchamianie złożonej architektury:
-```
+```dockerfile
 version: "3.8"
 
 services:
@@ -417,10 +437,6 @@ Mamy sytuację, ze user1 stworzył plik. W założeniach każdy może go przeczy
 Sprawdźmy zatem:
 ```bash
 docker exec -it user2-container sh
-#ls -l
-#cat plik_user1.txt
-#echo "Próba dopisania przez user2" >> /shared/plik_user1.txt
-#cat plik_user1.txt
 ```
 zalogowaliśmy się do terminala na user2. Teraz możemy przeklikać te kroki
 
